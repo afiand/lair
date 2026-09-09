@@ -260,6 +260,12 @@ The DGX Spark is powered by the **NVIDIA GB10 Grace Blackwell Superchip** and br
 - Build on **open-source components** without SaaS lock-in
 - Improve **cost control** for sustained workloads versus token-based cloud billing
 
+**System Requirements & Hardware Setup**
+
+To ensure optimal performance, stability and proper power management when running LAiR, your DGX Spark operating system, software components and base firmware must be fully up to date. 
+
+You can update these components by following the [official NVIDIA OS and Component Update Guide](https://docs.nvidia.com/dgx/dgx-spark/os-and-component-update.html).
+
 ### DGX Spark Quick Start
 
 Run the unified setup wizard directly on your DGX Spark (running DGX OS / Ubuntu 24.04 ARM64). The wizard will guide you through the same installation flow as any other supported Ubuntu host.
