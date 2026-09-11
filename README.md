@@ -203,6 +203,13 @@ sudo ./setup.sh
 
 ---
 
+### Getting Started
+- **[🚀 Practical Tutorial: Single-Node in Cloud](docs/Tutorial%20to%20Start.md)** — Step-by-step example of a real-world cloud installation
+- **[🚀 Practical Tutorial: Single-Node on PC with GPU](docs/Tutorial%20PC%20with%20GPU.md)** — Step-by-step example of a local LAN installation on a PC with GPU
+- **[🖼️ ComfyUI Image Generator Setup](docs/Tutorial_ComfyUI_Setup.md)** — Step-by-step guide to configuring ComfyUI for image generation in LAIR
+
+---
+
 ## Installation Paths
 
 The unified setup wizard (`sudo ./setup.sh`) automatically detects your environment and guides you through the appropriate installation path. It supports the following main deployment scenarios:
