@@ -42,17 +42,17 @@
     {
       "id": 4,
       "type": "stat",
-      "title": "Network I/O (rx/tx)",
+      "title": "Network I/O (bits/s)",
       "gridPos": { "h": 8, "w": 6, "x": 18, "y": 0 },
       "targets": [
-        { "expr": "rate(node_network_receive_bytes_total{device!~\"lo\"}[5m]) * 8", "refId": "A", "legendFormat": "rx (bits/s)" },
-        { "expr": "rate(node_network_transmit_bytes_total{device!~\"lo\"}[5m]) * 8", "refId": "B", "legendFormat": "tx (bits/s)" }
+        { "expr": "rate(node_network_receive_bytes_total{device!~\"lo\"}[5m]) * 8", "refId": "A", "legendFormat": "rx" },
+        { "expr": "rate(node_network_transmit_bytes_total{device!~\"lo\"}[5m]) * 8", "refId": "B", "legendFormat": "tx" }
       ]
     },
     {
       "id": 5,
       "type": "table",
-      "title": "Pod Resource Usage (namespace: lair)",
+      "title": "Pod CPU Usage (namespace: lair)",
       "gridPos": { "h": 10, "w": 12, "x": 0, "y": 8 },
       "targets": [{
         "expr": "topk(10, sum by (pod, container) (rate(container_cpu_usage_seconds_total{namespace=\"lair\"}[5m])) * 1000)",

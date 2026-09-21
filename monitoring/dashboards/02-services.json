@@ -20,7 +20,7 @@
     {
       "id": 2,
       "type": "timeseries",
-      "title": "CPU Usage per Service (m)",
+      "title": "CPU Usage per Service (millicores)",
       "gridPos": { "h": 8, "w": 12, "x": 0, "y": 4 },
       "targets": [{
         "expr": "sum by (pod) (rate(container_cpu_usage_seconds_total{namespace=\"lair\"}[5m])) * 1000",
@@ -43,14 +43,14 @@
     },
     {
       "id": 4,
-      "type": "timeseries",
-      "title": "PostgreSQL - Active Connections",
+      "type": "stat",
+      "title": "PostgreSQL Pod Status",
       "gridPos": { "h": 8, "w": 8, "x": 0, "y": 12 },
       "targets": [{
-        "expr": "sum(kube_pod_status_phase{namespace=\"lair\", pod=~\"lair-postgresql.*\", phase=\"Running\"})",
+        "expr": "count(kube_pod_status_phase{namespace=\"lair\", pod=~\"lair-postgresql.*\", phase=\"Running\"} == 1)",
         "refId": "A"
       }],
-      "fieldConfig": { "defaults": { "unit": "short", "displayName": "Healthy" } }
+      "fieldConfig": { "defaults": { "displayName": "Healthy" } }
     },
     {
       "id": 5,
@@ -67,13 +67,14 @@
     {
       "id": 6,
       "type": "timeseries",
-      "title": "Ollama - GPU/CPU Load (if metrics available)",
+      "title": "Ollama - CPU Usage",
       "gridPos": { "h": 8, "w": 8, "x": 16, "y": 12 },
       "targets": [{
-        "expr": "process_cpu_seconds_total{namespace=\"lair\", pod=~\"lair-ollama.*\"}",
-        "refId": "A"
+        "expr": "rate(process_cpu_seconds_total{namespace=\"lair\", pod=~\"lair-ollama.*\"}[5m])",
+        "refId": "A",
+        "legendFormat": "{{pod}}"
       }],
-      "fieldConfig": { "defaults": { "unit": "s" } }
+      "fieldConfig": { "defaults": { "unit": "percentunit" } }
     }
   ]
 }

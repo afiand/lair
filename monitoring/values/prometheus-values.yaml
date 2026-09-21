@@ -1,0 +1,75 @@
+# ============================================================================
+# kube-prometheus-stack values for LAiR
+# Reference: https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack
+# ============================================================================
+
+prometheusOperator:
+  enabled: true
+
+prometheus:
+  prometheusSpec:
+    retention: 15d
+    resources:
+      requests:
+        cpu: 200m
+        memory: 512Mi
+      limits:
+        memory: 1Gi
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          resources:
+            requests:
+              storage: 20Gi
+
+grafana:
+  admin:
+    user: admin
+  # password set via --set at install time
+  persistence:
+    enabled: true
+    size: 5Gi
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+  service:
+    type: NodePort
+    nodePort: 30300
+  sidecar:
+    datasources:
+      enabled: true
+    dashboards:
+      enabled: true
+      label: grafana_dashboard
+      annotation: k8s-sidecar.dashboard
+
+nodeExporter:
+  enabled: true
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+
+kube-state-metrics:
+  enabled: true
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+
+alertmanager:
+  enabled: true
+  alertmanagerSpec:
+    resources:
+      requests:
+        cpu: 50m
+        memory: 64Mi
+
+# To add email/webhook notifications, uncomment and configure:
+# alertmanager:
+#   config:
+#     receivers:
+#     - name: 'default'
+#       email_configs:
+#       - to: admin@example.com

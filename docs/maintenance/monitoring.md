@@ -633,3 +633,98 @@ kubectl patch deployment <deployment-name> -n lair -p '{"spec":{"template":{"spe
 ---
 
 **🎯 Ready to optimize your monitoring?** Continue with [Update Procedures](updates.md) or explore [Platform-Specific Troubleshooting](../troubleshooting/platform-specific.md)!
+
+---
+
+## 📈 Prometheus + Grafana + Loki (Recommended)
+
+> **Full observability stack: metrics, logs, and alerting in one place.**
+
+### Quick Start
+
+```bash
+# From the repo root, use the main setup wizard:
+sudo ./setup.sh
+# Select: 5) Install Monitoring Stack
+
+# Or directly:
+cd monitoring && sudo ./setup.sh
+```
+
+### What's Included
+
+| Component | Purpose | Default |
+|-----------|---------|---------|
+| **Prometheus** | Metrics collection (15d retention) | 20Gi PVC |
+| **Grafana** | Dashboards + log viewer | NodePort 30300 |
+| **Loki** | Log aggregation (7d retention) | 10Gi PVC |
+| **Promtail** | Log collection from all pods | DaemonSet |
+| **Alertmanager** | Basic threshold alerts | Configured |
+| **node-exporter** | Node metrics (CPU, RAM, Disk, Net) | DaemonSet |
+| **kube-state-metrics** | Kubernetes object metrics | Deployment |
+
+### Access
+
+| Environment | URL |
+|-------------|-----|
+| **LAN (MicroK8s)** | `http://<node-ip>:30300` |
+| **Cloud (managed k8s)** | `http://grafana.<your-domain>` (if Ingress) |
+
+- **User**: `admin`
+- **Password**: printed during setup (or set manually)
+
+### Dashboards
+
+Located in the **LAiR** folder in Grafana:
+
+1. **LAiR - Infrastructure Overview** — CPU, RAM, Disk, Network gauges, Pod CPU table, PVC capacity
+2. **LAiR - Services Monitoring** — Pod status, per-service CPU/Memory, PostgreSQL/Redis/Ollama panels
+3. **LAiR - Log Explorer** — Log browser with filters (namespace, pod, level), error/warn counts
+
+### Alerting (Basic Thresholds)
+
+| Alert | Condition | Severity |
+|-------|-----------|----------|
+| HighCPUUsage | CPU > 85% for 5m | warning |
+| HighMemoryUsage | Memory > 90% for 5m | warning |
+| DiskSpaceLow | Disk < 15% for 10m | critical |
+| NodeNotReady | Node NotReady for 2m | critical |
+| PodNotRunning | Pod not Running for 2m | critical |
+| PodCrashLooping | >3 restarts in 15m | warning |
+| ServiceDown | No scrape for 1m | critical |
+
+### Remove Monitoring
+
+```bash
+cd monitoring && sudo ./cleanup.sh
+```
+
+Or from the main setup wizard: **4) Teardown → 5) Remove Monitoring Stack**
+
+### Configuration Files
+
+```
+monitoring/
+├── setup.sh                  # Interactive setup wizard
+├── cleanup.sh                # Teardown script
+├── values/
+│   ├── prometheus-values.yaml  # Prometheus + Grafana + Alertmanager
+│   ├── loki-values.yaml        # Log aggregation
+│   └── promtail-values.yaml    # Log collection
+├── provisioning/
+│   ├── datasources.yaml        # Grafana datasource config
+│   └── dashboards.yaml         # Dashboard provider
+├── dashboards/
+│   ├── 01-infrastructure.json  # Node + pod metrics
+│   ├── 02-services.json        # Per-service monitoring
+│   └── 03-logs.json            # Log browser
+└── rules/
+    └── lair-alerts.yaml        # Alert rules
+```
+
+### Resources
+
+- [kube-prometheus-stack](https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack)
+- [Grafana Loki](https://grafana.com/docs/loki/latest/)
+- [Promtail configuration](https://grafana.com/docs/loki/latest/clients/promtail/)
+- [Grafana alerting docs](https://grafana.com/docs/grafana/latest/alerting/)

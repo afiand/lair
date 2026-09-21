@@ -95,7 +95,8 @@ show_main_menu() {
     echo "2) Deploy Lair application (Step 2 - requires existing cluster)"
     echo "3) Configure DNS for local network access (Jetson/LAN)"
     echo "4) Teardown/Cleanup options"
-    echo "5) Exit"
+    echo "5) Install Monitoring Stack (Prometheus + Grafana + Loki)"
+    echo "6) Exit"
     echo ""
 }
 
@@ -127,7 +128,10 @@ show_teardown_menu() {
     echo "4) Teardown managed cluster tools"
     echo "   (Remove Helm, kubectl, and clean cluster resources - includes Lair)"
     echo ""
-    echo "5) Back to main menu"
+    echo "5) Remove Monitoring Stack"
+    echo "   (Uninstall Prometheus, Grafana, Loki, Promtail and their data)"
+    echo ""
+    echo "6) Back to main menu"
     echo ""
 }
 
@@ -380,7 +384,7 @@ handle_cluster_setup() {
 handle_teardown() {
     while true; do
         show_teardown_menu
-        choice=$(get_user_choice "Enter your choice (1-5): ")
+        choice=$(get_user_choice "Enter your choice (1-6): ")
         
         case $choice in
             1)
@@ -409,13 +413,55 @@ handle_teardown() {
                 return $?
                 ;;
             5)
+                print_info "Proceeding with Monitoring Stack removal..."
+                if check_cluster_connectivity; then
+                    teardown_monitoring
+                    return $?
+                else
+                    print_error "No Kubernetes cluster detected!"
+                fi
+                ;;
+            6)
                 return 0
                 ;;
             *)
-                print_error "Invalid choice. Please enter 1, 2, 3, 4, or 5."
+                print_error "Invalid choice. Please enter 1, 2, 3, 4, 5, or 6."
                 ;;
         esac
     done
+}
+
+install_monitoring() {
+    print_info "Installing Monitoring Stack (Prometheus + Grafana + Loki)..."
+    echo ""
+    if get_confirmation "Do you want to continue? (y/N): " | grep -iq "^y"; then
+        cd "$SCRIPT_DIR/monitoring"
+        ./setup.sh
+        if [ $? -eq 0 ]; then
+            print_success "Monitoring Stack installed successfully!"
+        else
+            print_error "Monitoring setup failed. Check the output above."
+        fi
+    else
+        print_info "Setup cancelled."
+        return 1
+    fi
+}
+
+teardown_monitoring() {
+    print_info "Removing Monitoring Stack..."
+    echo ""
+    print_warning "This will remove Prometheus, Grafana, Loki, Promtail and ALL their data."
+    print_warning "This action is IRREVERSIBLE!"
+    echo ""
+    if get_confirmation "Do you want to continue? Type 'yes' to confirm: " | grep -q "^yes$"; then
+        cd "$SCRIPT_DIR/monitoring"
+        ./cleanup.sh
+        print_success "Monitoring Stack removed successfully!"
+    else
+        print_info "Teardown cancelled."
+        return 1
+    fi
 }
 
 main() {
@@ -424,7 +470,7 @@ main() {
     
     while true; do
         show_main_menu
-        choice=$(get_user_choice "Enter your choice (1-5): ")
+        choice=$(get_user_choice "Enter your choice (1-6): ")
         
         case $choice in
             1)
@@ -449,11 +495,20 @@ main() {
                 handle_teardown
                 ;;
             5)
+                print_info "Installing Monitoring Stack..."
+                if check_cluster_connectivity; then
+                    install_monitoring
+                else
+                    print_error "No Kubernetes cluster detected!"
+                    print_info "Monitoring requires an active cluster."
+                fi
+                ;;
+            6)
                 print_info "Goodbye! 👋"
                 exit 0
                 ;;
             *)
-                print_error "Invalid choice. Please enter 1, 2, 3, 4, or 5."
+                print_error "Invalid choice. Please enter 1, 2, 3, 4, 5, or 6."
                 ;;
         esac
         
