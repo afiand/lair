@@ -1,0 +1,83 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: lair-alerts
+  namespace: monitoring
+  labels:
+    app: lair-monitoring
+    role: alert-rules
+spec:
+  groups:
+    - name: lair-infrastructure
+      rules:
+        - alert: HighCPUUsage
+          expr: 100 - (avg by (instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 85
+          for: 5m
+          labels:
+            severity: warning
+            team: lair
+          annotations:
+            summary: "High CPU usage on {{ $labels.instance }}"
+            description: "CPU is above 85% for more than 5 minutes (current: {{ $value | printf \"%.1f\" }}%)"
+
+        - alert: HighMemoryUsage
+          expr: (1 - node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes) * 100 > 90
+          for: 5m
+          labels:
+            severity: warning
+            team: lair
+          annotations:
+            summary: "High memory usage on {{ $labels.instance }}"
+            description: "Memory is above 90% for more than 5 minutes (current: {{ $value | printf \"%.1f\" }}%)"
+
+        - alert: DiskSpaceLow
+          expr: (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}) * 100 < 15
+          for: 10m
+          labels:
+            severity: critical
+            team: lair
+          annotations:
+            summary: "Disk space low on {{ $labels.instance }}"
+            description: "Less than 15% disk space available"
+
+        - alert: NodeNotReady
+          expr: kube_node_status_ready{condition="True"} == 0
+          for: 2m
+          labels:
+            severity: critical
+            team: lair
+          annotations:
+            summary: "Node {{ $labels.node }} is NotReady"
+            description: "Kubernetes node has been NotReady for more than 2 minutes"
+
+    - name: lair-applications
+      rules:
+        - alert: PodNotRunning
+          expr: kube_pod_status_phase{namespace="lair", phase="Running"} == 0
+          for: 2m
+          labels:
+            severity: critical
+            team: lair
+          annotations:
+            summary: "Pod {{ $labels.pod }} is not Running"
+            description: "Pod in namespace lair has been in non-Running state for 2 minutes"
+
+        - alert: PodCrashLooping
+          expr: increase(kube_pod_container_status_restarts_total{namespace="lair"}[15m]) > 3
+          for: 5m
+          labels:
+            severity: warning
+            team: lair
+          annotations:
+            summary: "Pod {{ $labels.pod }} is crash looping"
+            description: "Container restarted more than 3 times in 15 minutes"
+
+        - alert: ServiceDown
+          expr: up{namespace="lair"} == 0
+          for: 1m
+          labels:
+            severity: critical
+            team: lair
+          annotations:
+            summary: "Service {{ $labels.job }} is down"
+            description: "Prometheus cannot scrape target for 1 minute"

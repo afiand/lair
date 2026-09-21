@@ -1,0 +1,76 @@
+{
+  "title": "LAiR - Infrastructure Overview",
+  "uid": "lair-infra",
+  "tags": ["lair", "infrastructure"],
+  "timezone": "browser",
+  "time": { "from": "now-6h", "to": "now" },
+  "refresh": "30s",
+  "panels": [
+    {
+      "id": 1,
+      "type": "gauge",
+      "title": "CPU Usage (%)",
+      "gridPos": { "h": 8, "w": 6, "x": 0, "y": 0 },
+      "targets": [{
+        "expr": "100 - (avg by (instance) (rate(node_cpu_seconds_total{mode=\"idle\"}[5m])) * 100)",
+        "refId": "A"
+      }],
+      "fieldConfig": { "defaults": { "unit": "percent", "max": 100, "min": 0, "thresholds": { "steps": [{"color":"green","value":null},{"color":"yellow","value":70},{"color":"red","value":90}] } } }
+    },
+    {
+      "id": 2,
+      "type": "gauge",
+      "title": "Memory Usage (%)",
+      "gridPos": { "h": 8, "w": 6, "x": 6, "y": 0 },
+      "targets": [{
+        "expr": "(1 - node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes) * 100",
+        "refId": "A"
+      }],
+      "fieldConfig": { "defaults": { "unit": "percent", "max": 100, "min": 0, "thresholds": { "steps": [{"color":"green","value":null},{"color":"yellow","value":80},{"color":"red","value":95}] } } }
+    },
+    {
+      "id": 3,
+      "type": "gauge",
+      "title": "Disk Usage (%)",
+      "gridPos": { "h": 8, "w": 6, "x": 12, "y": 0 },
+      "targets": [{
+        "expr": "(1 - node_filesystem_avail_bytes{mountpoint=\"/\"} / node_filesystem_size_bytes{mountpoint=\"/\"}) * 100",
+        "refId": "A"
+      }],
+      "fieldConfig": { "defaults": { "unit": "percent", "max": 100, "min": 0, "thresholds": { "steps": [{"color":"green","value":null},{"color":"yellow","value":75},{"color":"red","value":90}] } } }
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "Network I/O (rx/tx)",
+      "gridPos": { "h": 8, "w": 6, "x": 18, "y": 0 },
+      "targets": [
+        { "expr": "rate(node_network_receive_bytes_total{device!~\"lo\"}[5m]) * 8", "refId": "A", "legendFormat": "rx (bits/s)" },
+        { "expr": "rate(node_network_transmit_bytes_total{device!~\"lo\"}[5m]) * 8", "refId": "B", "legendFormat": "tx (bits/s)" }
+      ]
+    },
+    {
+      "id": 5,
+      "type": "table",
+      "title": "Pod Resource Usage (namespace: lair)",
+      "gridPos": { "h": 10, "w": 12, "x": 0, "y": 8 },
+      "targets": [{
+        "expr": "topk(10, sum by (pod, container) (rate(container_cpu_usage_seconds_total{namespace=\"lair\"}[5m])) * 1000)",
+        "refId": "A",
+        "format": "table"
+      }]
+    },
+    {
+      "id": 6,
+      "type": "bargauge",
+      "title": "PVC Capacity",
+      "gridPos": { "h": 10, "w": 12, "x": 12, "y": 8 },
+      "targets": [{
+        "expr": "kubelet_volume_stats_used_bytes / kubelet_volume_stats_capacity_bytes * 100",
+        "refId": "A",
+        "legendFormat": "{{persistentvolumeclaim}} ({{namespace}})"
+      }],
+      "fieldConfig": { "defaults": { "unit": "percent", "max": 100 } }
+    }
+  ]
+}

@@ -1,0 +1,72 @@
+{
+  "title": "LAiR - Log Explorer",
+  "uid": "lair-logs",
+  "tags": ["lair", "logs"],
+  "timezone": "browser",
+  "time": { "from": "now-1h", "to": "now" },
+  "refresh": "5s",
+  "templating": {
+    "list": [
+      {
+        "name": "namespace",
+        "type": "query",
+        "datasource": "Loki",
+        "query": "label_values(namespace)",
+        "current": { "text": "lair", "value": "lair" },
+        "refresh": 1
+      },
+      {
+        "name": "pod",
+        "type": "query",
+        "datasource": "Loki",
+        "query": "label_values({namespace=\"$namespace\"}, pod)",
+        "refresh": 1
+      },
+      {
+        "name": "level",
+        "type": "custom",
+        "query": "error,warn,info,debug",
+        "current": { "text": "all", "value": "all" }
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "logs",
+      "title": "Logs",
+      "gridPos": { "h": 16, "w": 24, "x": 0, "y": 0 },
+      "targets": [{
+        "expr": "{namespace=\"$namespace\", pod=~\"$pod\"}"
+      }],
+      "options": { "showTime": true, "wrapLogMessage": true, "sortOrder": "Descending", "enableLogDetails": true }
+    },
+    {
+      "id": 2,
+      "type": "stat",
+      "title": "Error Count (last hour)",
+      "gridPos": { "h": 4, "w": 6, "x": 0, "y": 16 },
+      "targets": [{
+        "expr": "sum(count_over_time({namespace=\"lair\"} |~ \"(?i)(error|exception|fatal)\" [1h]))"
+      }]
+    },
+    {
+      "id": 3,
+      "type": "stat",
+      "title": "Warn Count (last hour)",
+      "gridPos": { "h": 4, "w": 6, "x": 6, "y": 16 },
+      "targets": [{
+        "expr": "sum(count_over_time({namespace=\"lair\"} |~ \"(?i)(warn|warning)\" [1h]))"
+      }]
+    },
+    {
+      "id": 4,
+      "type": "stat",
+      "title": "Total Log Lines (last hour)",
+      "gridPos": { "h": 4, "w": 6, "x": 12, "y": 16 },
+      "targets": [{
+        "expr": "sum(count_over_time({namespace=\"lair\"}[1h]))"
+      }]
+    }
+  ]
+}

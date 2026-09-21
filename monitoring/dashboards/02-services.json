@@ -1,0 +1,79 @@
+{
+  "title": "LAiR - Services Monitoring",
+  "uid": "lair-services",
+  "tags": ["lair", "services"],
+  "timezone": "browser",
+  "time": { "from": "now-6h", "to": "now" },
+  "refresh": "30s",
+  "panels": [
+    {
+      "id": 1,
+      "type": "stat",
+      "title": "Pod Status Overview",
+      "gridPos": { "h": 4, "w": 24, "x": 0, "y": 0 },
+      "targets": [
+        { "expr": "count(kube_pod_status_phase{namespace=\"lair\", phase=\"Running\"} == 1)", "refId": "A", "legendFormat": "Running" },
+        { "expr": "count(kube_pod_status_phase{namespace=\"lair\", phase=\"CrashLoopBackOff\"} == 1)", "refId": "B", "legendFormat": "CrashLoop" },
+        { "expr": "count(kube_pod_status_phase{namespace=\"lair\", phase=\"Pending\"} == 1)", "refId": "C", "legendFormat": "Pending" }
+      ]
+    },
+    {
+      "id": 2,
+      "type": "timeseries",
+      "title": "CPU Usage per Service (m)",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 4 },
+      "targets": [{
+        "expr": "sum by (pod) (rate(container_cpu_usage_seconds_total{namespace=\"lair\"}[5m])) * 1000",
+        "refId": "A",
+        "legendFormat": "{{pod}}"
+      }],
+      "fieldConfig": { "defaults": { "unit": "m" } }
+    },
+    {
+      "id": 3,
+      "type": "timeseries",
+      "title": "Memory Usage per Service (Mi)",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 4 },
+      "targets": [{
+        "expr": "sum by (pod) (container_memory_working_set_bytes{namespace=\"lair\"}) / 1048576",
+        "refId": "A",
+        "legendFormat": "{{pod}}"
+      }],
+      "fieldConfig": { "defaults": { "unit": "mbytes" } }
+    },
+    {
+      "id": 4,
+      "type": "timeseries",
+      "title": "PostgreSQL - Active Connections",
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 12 },
+      "targets": [{
+        "expr": "sum(kube_pod_status_phase{namespace=\"lair\", pod=~\"lair-postgresql.*\", phase=\"Running\"})",
+        "refId": "A"
+      }],
+      "fieldConfig": { "defaults": { "unit": "short", "displayName": "Healthy" } }
+    },
+    {
+      "id": 5,
+      "type": "timeseries",
+      "title": "Redis - Memory (Mi)",
+      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 12 },
+      "targets": [{
+        "expr": "container_memory_working_set_bytes{namespace=\"lair\", pod=~\"lair-redis.*\"} / 1048576",
+        "refId": "A",
+        "legendFormat": "used"
+      }],
+      "fieldConfig": { "defaults": { "unit": "mbytes" } }
+    },
+    {
+      "id": 6,
+      "type": "timeseries",
+      "title": "Ollama - GPU/CPU Load (if metrics available)",
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 12 },
+      "targets": [{
+        "expr": "process_cpu_seconds_total{namespace=\"lair\", pod=~\"lair-ollama.*\"}",
+        "refId": "A"
+      }],
+      "fieldConfig": { "defaults": { "unit": "s" } }
+    }
+  ]
+}

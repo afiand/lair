@@ -1,0 +1,41 @@
+# Grafana Loki values for LAiR
+# Reference: https://github.com/grafana/helm-charts/tree/main/charts/loki
+
+replicaCount: 1
+
+loki:
+  auth_enabled: false
+  storage_config:
+    boltdb_shipper:
+      active_index_directory: /var/loki/boltdb-shipper-active
+      cache_directory: /var/loki/boltdb-shipper-cache
+      index:
+        cache:
+          enabled: true
+          max_size_mb: 100
+        resync_interval: 5m
+        sharding_enabled: true
+    filesystem:
+      directory: /var/loki/chunks
+
+  limits_config:
+    retention_period: 168h  # 7 days
+
+  structure_scope:
+    enabled: true
+
+persistence:
+  enabled: true
+  size: 10Gi
+  accessMode: ReadOnce
+
+service:
+  type: ClusterIP
+  port: 3100
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    memory: 512Mi
