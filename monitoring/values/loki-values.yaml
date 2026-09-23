@@ -1,37 +1,49 @@
+# ============================================================================
 # Grafana Loki values for LAiR
-# Reference: https://github.com/grafana/helm-charts/tree/main/charts/loki
+# Chart: grafana/loki (6.x+)
+# Architecture: SingleBinary (required for filesystem storage)
+# ============================================================================
 
-replicaCount: 1
+# SingleBinary mode is required for filesystem storage (no object storage)
+deploymentMode: SingleBinary
+singleBinary:
+  replicas: 1
+
+# Disable scalable targets (not compatible with filesystem storage)
+write:
+  replicas: 0
+read:
+  replicas: 0
+backend:
+  replicas: 0
 
 loki:
   auth_enabled: false
-  storage_config:
-    boltdb_shipper:
-      active_index_directory: /var/loki/boltdb-shipper-active
-      cache_directory: /var/loki/boltdb-shipper-cache
-      index:
-        cache:
-          enabled: true
-          max_size_mb: 100
-        resync_interval: 5m
-        sharding_enabled: true
+  # Storage: filesystem (local PVC)
+  storage:
+    type: filesystem
     filesystem:
-      directory: /var/loki/chunks
+      chunks_directory: /var/loki/chunks
+      rules_directory: /var/loki/rules
 
   limits_config:
     retention_period: 168h  # 7 days
 
-  structure_scope:
-    enabled: true
+  # Schema config (required)
+  schemaConfig:
+    configs:
+      - from: "2024-01-01"
+        store: tsdb
+        object_store: filesystem
+        schema: v13
+        index:
+          prefix: index_
+          period: 24h
 
 persistence:
   enabled: true
   size: 10Gi
   accessMode: ReadOnce
-
-service:
-  type: ClusterIP
-  port: 3100
 
 resources:
   requests:
