@@ -37,12 +37,16 @@ preflight() {
 # ─── Detect platform ─────────────────────────────────────────────────────────
 detect_platform() {
     STORAGE_CLASS=""
-    if kubectl get ns 2>/dev/null | grep -q "longhorn-system"; then
-        STORAGE_CLASS="lair-storage"
-        info "Detected MicroK8s/LAN platform (Longhorn storage available)"
-    else
-        info "Detected managed/cloud platform (using default storage class)"
-    fi
+    # Prefer a Longhorn-based storage class: detect the actual name present in the cluster
+    # (helm-chart generates "<global.storageClass>-longhorn", e.g. "lair-storage-longhorn")
+    for sc in lair-storage-longhorn lair-longhorn lair-storage longhorn; do
+        if kubectl get sc "$sc" >/dev/null 2>&1; then
+            STORAGE_CLASS="$sc"
+            info "Detected MicroK8s/LAN platform (storage class '$sc')"
+            return 0
+        fi
+    done
+    info "Detected managed/cloud platform (using default storage class)"
 }
 
 # ─── Ask configuration ───────────────────────────────────────────────────────
