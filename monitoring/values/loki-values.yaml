@@ -45,6 +45,13 @@ persistence:
   size: 10Gi
   accessMode: ReadOnce
 
+# Chunks cache: reduced memory for edge/LAN nodes
+# (default is 8192 MB / 500m CPU — too much for local deployments)
+chunksCache:
+  enabled: true
+  allocatedMemory: 1024   # 1 GB
+  allocatedCPU: 200m
+
 resources:
   requests:
     cpu: 100m
