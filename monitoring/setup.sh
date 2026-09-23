@@ -131,7 +131,9 @@ provision_grafana() {
         --from-file=01-infrastructure.json="$SCRIPT_DIR/dashboards/01-infrastructure.json" \
         --from-file=02-services.json="$SCRIPT_DIR/dashboards/02-services.json" \
         --from-file=03-logs.json="$SCRIPT_DIR/dashboards/03-logs.json" \
-        --namespace "$MONITORING_NS" --dry-run=client -o yaml | kubectl apply -f -
+        --namespace "$MONITORING_NS" \
+        --label=grafana_dashboard=true \
+        --dry-run=client -o yaml | kubectl apply -f -
 
     info "🚨 Applying alert rules..."
     kubectl apply -f "$SCRIPT_DIR/rules/lair-alerts.yaml"
