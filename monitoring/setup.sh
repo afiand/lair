@@ -101,19 +101,19 @@ install_components() {
         --set grafana.admin.password="$GRAFANA_PASSWORD" \
         --set prometheus.prometheusSpec.retention="$PROM_RETENTION" \
         $EXTRA_ARGS \
-        --wait --timeout 10m
+        --wait --timeout 15m
 
     info "🚀 Installing Loki..."
     helm upgrade --install lair-loki grafana/loki \
         --namespace "$MONITORING_NS" \
         -f "$SCRIPT_DIR/values/loki-values.yaml" \
-        --wait --timeout 5m
+        --wait --timeout 15m
 
     info "🚀 Installing Promtail..."
     helm upgrade --install lair-promtail grafana/promtail \
         --namespace "$MONITORING_NS" \
         -f "$SCRIPT_DIR/values/promtail-values.yaml" \
-        --wait --timeout 5m
+        --wait --timeout 15m
 
     success "All Helm releases installed."
 }
