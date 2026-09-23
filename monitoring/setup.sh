@@ -132,7 +132,7 @@ provision_grafana() {
         --from-file=02-services.json="$SCRIPT_DIR/dashboards/02-services.json" \
         --from-file=03-logs.json="$SCRIPT_DIR/dashboards/03-logs.json" \
         --namespace "$MONITORING_NS" \
-        --label=grafana_dashboard=true \
+        --label=grafana_dashboard=1 \
         --dry-run=client -o yaml | kubectl apply -f -
 
     info "🚨 Applying alert rules..."
