@@ -418,6 +418,8 @@ ollama:
   vramPercentage: $VRAM_PERCENTAGE
   persistence:
     size: $OLLAMA_STORAGE_SIZE
+  memoryRequest: ${MEM_OLLAMA_REQ}
+  memoryLimit: ${MEM_OLLAMA}
   resources:
     limits:
       memory: ${MEM_OLLAMA}Mi
@@ -611,8 +613,8 @@ EOF
 minio:
   enabled: true
   image:
-    repository: minio/minio
-    tag: latest
+    repository: quay.io/minio/minio
+    tag: RELEASE.2025-09-07T16-13-09Z
   rootUser: $MINIO_ROOT_USER
   rootPassword: $MINIO_ROOT_PASSWORD
   storage:
