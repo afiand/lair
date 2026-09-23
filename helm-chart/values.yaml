@@ -211,10 +211,10 @@ ollama:
       failureThreshold: 3
   resources:
     limits:
-      memory: 4Gi
+      memory: 8Gi
       cpu: 2000m
     requests:
-      memory: 2Gi
+      memory: 4Gi
       cpu: 1000m
 
 comfyUI:
@@ -337,7 +337,10 @@ redis:
 minio:
   enabled: true
   image:
-    repository: minio/minio
+    repository: quay.io/minio/minio
+    tag: RELEASE.2025-09-07T16-13-09Z
+  mcImage:
+    repository: quay.io/minio/mc
     tag: latest
   # Root user credentials provide both administrative AND S3 API access
   # These are used for all MinIO operations (console, API, bucket management)
@@ -375,4 +378,4 @@ velero:
 
 global:
   storageClass: lair-storage # Base name - will become lair-storage-longhorn (standard) or lair-hostpath (jetson)
-  platform: "standard" # Options: "standard" (x86/x64 with Longhorn), "jetson" (ARM with hostpath)
+  platform: "standard" # Options: "standard" (x86/x64 with Longhorn), "jetson" (ARM with hostpath), "dgx_spark" (ARM64 with Longhorn)
